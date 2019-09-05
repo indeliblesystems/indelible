@@ -1,7 +1,7 @@
 Links
 =====
-* [Documentation](doc/README.md)
-* [Examples](examples/README.md)
+* [Documentation](doc/)
+* [Examples](examples/)
 
 What is Indelible?
 ------------------
