@@ -6,8 +6,9 @@ all: testprofile.js localsetup generate
 .DELETE_ON_ERROR:
 
 
-generated/doc/%.html: %.doc.kt doc.kt generated/doc generated/doc/%.extra
+../../doc/%.html: %.doc.kt doc.kt generated/doc generated/doc/%.extra
 	./$< --verify > $@ || ( cat $@ ; exit 1 )
+	git add $@
 
 generated/doc/%.extra:
 	@true
@@ -16,16 +17,10 @@ generated/doc/102-Python-API-tour.extra: 102-verify.py 102-Python-API-tour.docte
 	PYTHONPATH=../python python3 102-verify.py
 	touch $@
 
-generate: generated/doc $(patsubst %.doc.kt,generated/doc/%.html,${SRCS})
+generate: generated/doc $(patsubst %.doc.kt,../../doc/%.html,${SRCS})
 
 generated/doc:
 	mkdir -p $@
-
-publish: $(patsubst %.doc.kt,publish/doc/%.html,${SRCS})
-	fossil uv sync
-
-publish/doc/%.html: generated/doc/%.html
-	cd generated ; fossil uv add $(patsubst publish/%,%,$@)
 
 testprofile.js:
 	@echo Create testprofile.js from testprofile.js-example
