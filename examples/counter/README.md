@@ -20,6 +20,6 @@ Prerequisites
 
 Steps
 -----
-* [Step 1: Hello, Flask](/src/examples/counter/step1_hello_flask.py)
+* [Step 1: Hello, Flask](step1_hello_flask.py)
 * [Step 2: A '90s-style Hit Counter](step2_90s_hit_counter.py)
 * [Step 3: Making it reactive](step3_making_it_reactive.py)
