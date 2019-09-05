@@ -1,0 +1,178 @@
+
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+code, pre {
+    font-family: "Lucida Console", Menlo, monospace;
+}
+pre {
+    margin-left: 10px;
+}
+#input {
+    font-style: italic;
+}
+h1 {
+    margin-left: -68px;
+}
+h2 {
+    margin-left: -58px;
+}
+h3 {
+    margin-left: -48px;
+}
+h4 {
+    margin-left: -38px;
+}
+h5 {
+    margin-left: -28px;
+}
+h6 {
+    margin-left: -18px;
+}
+table {
+    border-collapse: collapse;
+}
+table, th, td {
+    border: 1px solid black;
+}
+body {
+    margin-left: 75px;
+    max-width: 700px;
+}
+</style>
+<body>
+
+
+<h2>Overview</h2>
+This is a quick tour of the Opionated Indelible Log API that uses
+a web browser and our .js file.
+
+<h2>Prerequisites</h2>
+<table>
+<tr><td>Indelible apikey<td>Please <a href="mailto:showmethelogs@indelible.systems">sign up</a> for the Developer Preview
+<tr><td>Web browser<td>Tested with Firefox, Chrome, and Safari
+</table>
+
+<h2>Getting started</h2>
+
+API credentials and an encryption key will be accessed from <code>testprofile.js</code>:
+<pre id="input">
+var profileJson = JSON.stringify({
+    endpointUrl: "https://log.ndlbl.net:8443",
+    customerId: "<i><b>customer-id</b></i>",
+    apikey: "<i><b>api-key</b></i>",
+    masterKeyBase64: "<code id="randomKey">zZHo1y1QAkzIT8BuNiLG8GVmwjN9VVfTq4v49LrWMIk=</code>"
+})
+</pre>
+
+We'll also need an <code>index.html</code> to start from:
+
+<pre>
+&lt;html>
+&lt;head>
+    &lt;title>Indelible Log - API Tour&lt;/title>
+&lt;/head>
+&lt;body>
+    &lt;script src="testprofile.js">&lt;/script>
+    &lt;script>
+        var indelible
+        var log
+        async function main() {
+            indelible = window["indelible-log"]
+            var profile = indelible.profileFromJson(profileJson)
+            console.log("ready to rock!  put your API calls here!")
+        }
+
+        window["indelible-log"] = { onload: main }
+    &lt;/script>
+    &lt;script src="https://code.ndlbl.net/uv/release/indelible-log-0.4.js">&lt;/script> &lt;!-- must be after onload is set -->
+&lt;/body></pre>
+<p>On opening the page, you should see the following
+in the JavaScript Console:
+
+<pre>ready to rock!  put your API calls here!</pre>
+
+<h2>Creating a log</h2>
+Replacing the <code>console.log</code> above with:
+
+<pre>var path = indelible.path(["walkthrough", "Hello, World!", "v3"])
+var clientId = "browser"
+var log = indelible.encryptingTransactor(path, profile, clientId)
+await log.create({"logGroup": "key1"})
+console.log("created log")</pre>
+<p>Now the console will show:
+
+<pre>created log</pre>
+
+<h2>Appending to a log</h2>
+
+<pre>await log.update({
+    commands: [
+        {
+            type: "Upsert",
+            key: "foo",
+            value: JSON.stringify([1, 2, 3])
+        }
+    ]
+})
+console.log("upserted value for 'foo'")</pre>
+shows:
+<pre>upserted value for 'foo'</pre>
+
+<h2>Getting the contents of a log</h2>
+Say you just want the current contents of the log.  Indelible provides this
+by doing the diff between two versions &mdash; the original, empty log (version 0),
+and the current version.  We'll just say <code>null</code> for the current version,
+and Indelible will tell us what it is.
+
+<pre>
+var diff = await log.diff(0, null)
+console.log(JSON.stringify(diff, null, "    "))</pre>
+shows:
+<pre>{
+    "fromVersion": "0",
+    "toVersion": "1",
+    "page": [
+        {
+            "change": "Add",
+            "entry": {
+                "key": "foo",
+                "value": "[1,2,3]"
+            },
+            "version": "1"
+        }
+    ],
+    "nextPageOptions": null
+}</pre>
+
+<h2>Reactive logs &mdash; Keeping up to date</h2>
+We can subscribe to diffs.  This works very similarly to the diff above,
+except when we're done seeing the difference to the latest version, the
+client <i>keeps waiting for changes</i>, and will keep invoking our handler
+for new versions, until we cancel it.
+
+<pre>
+const afterVersion = 0
+
+function onDiff(diff) {
+    console.log("got a diff! " + JSON.stringify(diff, null, "    "))
+}
+
+log.subscribeToDiffs(afterVersion, onDiff)</pre>
+shows:
+<pre>got a diff! {
+    "fromVersion": "0",
+    "toVersion": "1",
+    "page": [
+        {
+            "change": "Add",
+            "entry": {
+                "key": "foo",
+                "value": "[1,2,3]"
+            },
+            "version": "1"
+        }
+    ],
+    "nextPageOptions": null
+}</pre>

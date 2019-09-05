@@ -1,0 +1,304 @@
+
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+code, pre {
+    font-family: "Lucida Console", Menlo, monospace;
+}
+pre {
+    margin-left: 10px;
+}
+#input {
+    font-style: italic;
+}
+h1 {
+    margin-left: -68px;
+}
+h2 {
+    margin-left: -58px;
+}
+h3 {
+    margin-left: -48px;
+}
+h4 {
+    margin-left: -38px;
+}
+h5 {
+    margin-left: -28px;
+}
+h6 {
+    margin-left: -18px;
+}
+table {
+    border-collapse: collapse;
+}
+table, th, td {
+    border: 1px solid black;
+}
+body {
+    margin-left: 75px;
+    max-width: 700px;
+}
+</style>
+<body>
+
+
+
+<h2>Overview</h2>
+This is a quick tour of the Indelible Log API that uses
+what's already on your machine.
+
+<h2>Prerequisites</h2>
+<table><tr>
+<td>Indelible apikey</td><td>Please <a href="mailto:showmethelogs@indelible.systems">sign up</a> for the Developer Preview</td><tr>
+<td><code>curl</code></td><td>for issuing HTTP requests to the Indelible API</td></tr><tr>
+<td><code>base64</code></td><td>for doing base64 encoding/decoding</td></tr><tr>
+<td><i>Optional:</i> <code>jq</code></td><td>for filtering and formatting results</td></tr>
+</table>
+
+<h2 id="create">Creating a log</h2>
+Let's create a new log with the defaults.
+<pre id="input">
+ENDPOINT=https://log.ndlbl.net:8443
+CUSTOMERID=<i><b>customer-id</b></i>
+APIKEY=<i><b>"api-key"</b></i>
+LOGNAME=`echo -n "Hello, Indelible\!"`
+</pre>
+
+<pre id="input">
+curl -s $ENDPOINT/v1/log/create -X POST -H "Content-Type: application/json" -d "
+{
+  authinfo: {
+    customer_id: \"$CUSTOMERID\",
+    apikey: \"$APIKEY\"
+  },
+  logName: \"$LOGNAME\",
+  logGroup: \"unencrypted\"
+}"</pre>
+<p>
+<h2 id="upsert">Appending to a log</h2>
+Now we can append some entries to the log.
+
+<pre id="input">curl -s $ENDPOINT/v1/log/update -X POST -H "Content-Type: application/json" -d "
+{
+  authinfo: { customer_id: \"$CUSTOMERID\", apikey: \"$APIKEY\" },
+  logName: \"$LOGNAME\",
+  updateSource: \"walkthrough\"
+}
+{type: 'Upsert', key: \"`echo -n foo | base64`\", value: \"`echo -n bar | base64`\"}
+{type: 'Upsert', key: \"`echo -n foo2 | base64`\", value: \"`echo -n bar2 | base64`\"}
+"</pre>
+
+<p>
+To facilitate encryption, and keep Indelible agnostic, the keys and values are
+treated as binary, so they are base64-encoded over the wire.
+
+<h2 id="diff">Showing the contents of a log</h2>
+Let's see what it looks like:
+
+<pre id="input">
+curl -s $ENDPOINT/v1/log/diff -s -X POST -H "Content-Type: application/json" -d "
+{
+  authinfo: {
+    customer_id: \"$CUSTOMERID\",
+    apikey: \"$APIKEY\"
+  },
+  logName: \"$LOGNAME\"
+}"</pre>
+
+<pre>{
+    "fromVersion": 0,
+    "toVersion": 1,
+    "page": [
+        {
+            "change": "Add",
+            "entry": {
+                "key": "Zm9v",
+                "value": "YmFy"
+            },
+            "version": 1
+        },
+        {
+            "change": "Add",
+            "entry": {
+                "key": "Zm9vMg==",
+                "value": "YmFyMg=="
+            },
+            "version": 1
+        }
+    ],
+    "nextPageOptions": null
+}</pre>
+
+We can see the entries we added, shown in base64.  We're also
+starting to see how Indelible presents logs in terms of <i>versions</i>
+and <i>diffs</i>, which we'll dig into later.
+
+<p>
+If we want to summarize the contents of a log, we can filter out
+everything but the entries, and base64-decode them with <code>jq</code>.
+
+<pre id="input">!! | jq '.page[]|.entry|[(.key|@base64d),(.value|@base64d)]' | jq -c</pre>
+
+<pre>["foo","bar"]
+["foo2","bar2"]</pre>
+
+<h2 id="longpoll">Reactive Logs &mdash; Getting notified about new versions</h2>
+If we're asking for a diff when there isn't one yet, we can optionally
+wait until it shows up.  
+
+From another terminal window, you could issue this update:
+
+<pre id="input">curl -s $ENDPOINT/v1/log/update -X POST -H "Content-Type: application/json" -d "
+{
+  authinfo: { customer_id: \"$CUSTOMERID\", apikey: \"$APIKEY\" },
+  logName: \"$LOGNAME\",
+  updateSource: \"walkthrough\"
+}
+{type: 'ExpectVersion', version: '1'}
+{type: 'Upsert', key: \"`echo -n foo3 | base64`\", value: \"`echo -n bar3 | base64`\"}
+"</pre>
+
+While in your first terminal window, this diff request will wait up to a minute for
+the new version to show up:
+
+<pre id="input">
+curl -s $ENDPOINT/v1/log/diff -s -X POST -H "Content-Type: application/json" -d "
+{
+  authinfo: {
+    customer_id: \"$CUSTOMERID\",
+    apikey: \"$APIKEY\"
+  },
+  logName: \"$LOGNAME\",
+  fromVersion: 1,
+  waitSeconds: 60
+}"</pre>
+
+<pre>{
+    "fromVersion": 1,
+    "toVersion": 2,
+    "page": [
+        {
+            "change": "Add",
+            "entry": {
+                "key": "Zm9vMw==",
+                "value": "YmFyMw=="
+            },
+            "version": 2
+        }
+    ],
+    "nextPageOptions": null
+}</pre>
+
+<h2>Tracing the history of a key</h2>
+If we want to know the previous values of a key, we can take advantage of
+the <code>version</code> response field to put together the chain of versions
+that affected the key.
+<p>
+For example, with 3 separate transactions:
+
+<pre id="input">{type: 'ExpectVersion', version: 2}
+{type: 'Upsert', key: \"`echo -n foo | base64`\", value: \"`echo -n bar2 | base64`\"}</pre>
+
+<pre id="input">{type: 'ExpectVersion', version: 3}
+{type: 'Upsert', key: \"`echo -n foo | base64`\", value: \"`echo -n bar3 | base64`\"}</pre>
+
+<pre id="input">{type: 'ExpectVersion', version: 4}
+{type: 'Upsert', key: \"`echo -n somethingElse | base64`\", value: \"`echo -n somethingElse | base64`\"}</pre>
+We can see the diff for the latest version points us to version 4 as having created the value for <code>foo</code>:
+<pre id="input">curl -s $ENDPOINT/v1/log/diff -s -X POST -H "Content-Type: application/json" -d "
+{
+  authinfo: {
+    customer_id: \"$CUSTOMERID\",
+    apikey: \"$APIKEY\"
+  },
+  logName: \"$LOGNAME\",
+  orderResultsBy: \"key\",
+  paginationOptions: {
+    skipToKey: \"`echo -n foo | base64`\"
+  },
+  limit: 1
+}"</pre>
+
+<pre>{
+    "fromVersion": 0,
+    "toVersion": 5,
+    "page": [
+        {
+            "change": "Add",
+            "entry": {
+                "key": "Zm9v",
+                "value": "YmFyMw=="
+            },
+            "version": 4
+        }
+    ],</pre>
+<pre>...</pre>We can ask for the previous version, 3, to see what <code>foo</code> was before that:
+<pre id="input">curl -s $ENDPOINT/v1/log/diff -s -X POST -H "Content-Type: application/json" -d "
+{
+  authinfo: {
+    customer_id: \"$CUSTOMERID\",
+    apikey: \"$APIKEY\"
+  },
+  logName: \"$LOGNAME\",
+  orderResultsBy: \"key\",
+  fromVersion: 0,
+  toVersion: 3,
+  paginationOptions: {
+    skipToKey: \"`echo -n foo | base64`\"
+  },
+  limit: 1
+}"</pre>
+
+<pre>{
+    "fromVersion": 0,
+    "toVersion": 3,
+    "page": [
+        {
+            "change": "Add",
+            "entry": {
+                "key": "Zm9v",
+                "value": "YmFyMg=="
+            },
+            "version": 3
+        }
+    ],</pre>
+<pre>...</pre>The result above shows that version 3 set the value to YmFyMg== (bar2).  How about what happened before version 3?
+<pre id="input">curl -s $ENDPOINT/v1/log/diff -s -X POST -H "Content-Type: application/json" -d "
+{
+  authinfo: {
+    customer_id: \"$CUSTOMERID\",
+    apikey: \"$APIKEY\"
+  },
+  logName: \"$LOGNAME\",
+  orderResultsBy: \"key\",
+  fromVersion: 0,
+  toVersion: 2,
+  paginationOptions: {
+    skipToKey: \"`echo -n foo | base64`\"
+  },
+  limit: 1
+}"</pre>
+
+<pre>{
+    "fromVersion": 0,
+    "toVersion": 2,
+    "page": [
+        {
+            "change": "Add",
+            "entry": {
+                "key": "Zm9v",
+                "value": "YmFy"
+            },
+            "version": 1
+        }
+    ],</pre>
+<pre>...</pre>Version 1 is as early as we can go.
+<h2>Troubleshooting</h2>
+
+<h3>Error: Bad API Key</h3>
+<pre>
+{"code":1001,"message":"bad API key","details":{}}
+</pre>
+Are you sure your shell-fu is alright?  Strings properly escaped?  If so, contact us at youbrokeit<i>@</i>indelible.systems for verification (but please don't send your apikey in email).
