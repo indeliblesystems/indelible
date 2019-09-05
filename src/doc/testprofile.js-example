@@ -1,0 +1,7 @@
+var profileJson = JSON.stringify({
+    endpointUrl: "https://log.ndlbl.net:8443",
+    customerId: "123412341234123",
+    apikey: "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+    masterKeyBase64: "ubVubqG4uNncLz5JwXkh/1gPK3tLtoEtkgHzJjRcT50="
+})
+

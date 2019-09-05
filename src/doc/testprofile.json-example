@@ -1,0 +1,6 @@
+{
+	"endpoint_url": "https://log.ndlbl.net:8443",
+	"customer_id": "123412341234123",
+	"apikey": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+	"master_key_base64": "v7RBLmFz5oB+IWOtGBEyfgejHvyYZwMTu+x0bbzZ+/4="
+}

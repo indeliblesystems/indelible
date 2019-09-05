@@ -1,0 +1,6 @@
+export ENDPOINT=https://log.ndlbl.net:8443
+export CUSTOMERID="123412341234123"
+export APIKEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#export LOGNAME=`echo -n "Hello, Indelible\!"`
+export LOGNAME=`( echo -n test- ; dd if=/dev/random bs=1 count=19 2> /dev/null )`
+

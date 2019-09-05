@@ -1,0 +1,80 @@
+<h2 id="getting-started">Getting started</h2>
+Install the package:
+<pre id="input">
+pip install indelible_log
+</pre>
+Create <code>testprofile.json</code> for configuration:
+<pre>
+{
+    "endpoint_url": "https://log.ndlbl.net:8443",
+    "customer_id": "<i><b>customer-id</b></i>",
+    "apikey": "<i><b>api-key</b></i>",
+    "master_key_base64": "v7RBLmFz5oB+IWOtGBEyfgejHvyYZwMTu+x0bbzZ+/4="
+}</pre>
+Start Python:
+<pre id="input">
+python</pre><pre>
+Python 3.6.9 (default, Jul 25 2019, 01:16:08) 
+[GCC 4.2.1 Compatible FreeBSD Clang 6.0.0 (tags/RELEASE_600/final 326565)] on freebsd11
+Type "help", "copyright", "credits" or "license" for more information.
+</pre><pre>
+>>> from indelible_log import Cmd, Log
+>>> import json
+>>>
+&gt;&gt;&gt; profile = json.loads(open("testprofile.js", "r").read())
+&gt;&gt;&gt; log_name = json.dumps(["walkthrough", "Hello, world!", "v1"])
+&gt;&gt;&gt;
+</pre>
+
+<h2 id="create">Creating a log</h2>
+Let's create a new log with the defaults.
+<pre>
+>>> log = Log(log_name, profile, encrypt=True, key_mode="string", value_mode="json")
+>>> log.create(log_group="mykey")
+>>>
+</pre>
+<h2 id="upsert">Appending to a log</h2>
+<pre>
+>>> log.update(update_source="python", commands=[
+...     indelible_log.Cmd.Upsert("foo", [1, 2, 3])
+... ])
+>>>
+</pre>
+
+<h2 id="diff">Showing the contents of a log</h2>
+Iterate over the log's current entries:
+<pre>
+>>> for entry in log:
+...     print(entry)
+{'change': 'Add', 'entry': {'key': 'foo', 'value': [1, 2, 3]}, 'version': 1}
+>>>
+</pre>
+A previous version:
+<pre>
+>>> diff = log.version_diff(from_version=1)
+>>> for change in diff.changes():
+...     print(change)
+>>>
+</pre>
+<h2 id="longpoll">Reactive Logs &mdash; Getting notified about new versions</h2>
+In another window, get this update ready:
+<pre>
+>>> log.update(update_source="python", commands=[
+...     Cmd.ExpectVersion(1),
+...     Cmd.Remove("foo", [1, 2, 3]),
+...     Cmd.Insert("bar", [4, 5, 6])
+... ])
+>>>
+</pre>
+Back in your original window, start monitoring, then finish that <code>update()</code>:
+<pre>
+>>> diff = log.version_diff(from_version=1, wait_seconds=60)
+>>> diff.to_version
+2
+>>> for change in diff.changes():
+...     print(change)
+{'change': 'Remove', 'entry': {'key': 'foo', 'value': [1, 2, 3]}, 'version': 1}
+{'change': 'Add', 'entry': {'key': 'bar', 'value': [4, 5, 6]}, 'version': 2}
+>>>
+</pre>
+
