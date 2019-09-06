@@ -21,3 +21,4 @@ Steps
 * [Step 2: A '90s-style Hit Counter](step2_90s_hit_counter.py)
 * [Step 3: Making it reactive (client-side)](step3_reactive_clients.py)
 * [Step 4: Making it fully reactive (server+client-side)](step4_fully_reactive.py)
+* [Step 5: Simplifying interfaces](step5_simplifying_interfaces.py)

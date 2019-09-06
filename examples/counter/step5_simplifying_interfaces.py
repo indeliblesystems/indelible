@@ -1,40 +1,33 @@
 """
-Having a live counter is nice, but it would be even nicer to keep
-the server in sync with the counter all the time--it'll mean we
-can respond to requests immediately, without touching the persistence
-store.  Plus, the process of decoding the response felt kinda clunky.
-
-We'll add a thread that constantly syncs the counter state locally,
-and use that state to serve requests instead of calling Indelible
-per-request.
+Simplifications
+---------------
+Since our server always has the latest counter value, we don't need
+to expose version to clients anymore.  In fact, we can combine "get"
+and "watch" into a single interface.
 
 Example:
 --------
 >>> import requests
->>> requests.get("http://localhost:6003/watch/0").json()
-{'value': 2, 'version': 2}
+>>> requests.get("http://localhost:6004/watch").json()
+3
 >>>
 >>> # Simulate a click after some delay
 >>> from threading import Thread
 >>> import time
 >>> def request():
 ...     time.sleep(1)
-...     requests.get("http://localhost:6003/click")
+...     requests.get("http://localhost:6004/click")
 >>> t = Thread(target=request)
 >>> t.start()
 >>>
 >>> # Back in the main thread, we wait for the new version:
->>> requests.get("http://localhost:6003/watch/2").json()
-{'value': 3, 'version': 3}
+>>> requests.get("http://localhost:6004/watch/3").json()
+4
 >>>
 >>> # When there's no click, we timeout with no change:
->>> requests.get("http://localhost:6003/watch/3").json()
-{'value': 3, 'version': 3}
+>>> requests.get("http://localhost:6004/watch/3").json()
+4
 
-Observations
-------------
-Now that the system is reactive end-to-end, we have a bunch of choices,
-which we'll discuss in step 5.
 """
 
 from threading import Condition, Lock, Thread
@@ -44,6 +37,7 @@ from indelible_log import Cmd, Log, profileFromJson
 APP = Flask(__name__)
 PROFILE = profileFromJson(open("indelibleprofile.json", "r").read())
 LOG = Log("counter", PROFILE)
+
 LOG.create()
 
 LOCK = Lock()
@@ -53,20 +47,22 @@ LAST_CHANGE = {
     "version": 0
 }
 
-@APP.route("/get")
-def get():
-    """Return the current counter value and log version."""
-    with LOCK:
-        return jsonify(LAST_CHANGE)
+@APP.route("/watch")
+def watch_default():
+    """Wait up to 5 seconds for the counter to advance past 0, then return the
+       counter's current value.  Return immediately if the counter is already
+       past 0."""
+    return watch(0)
 
-@APP.route("/watch/<from_version>")
-def watch(from_version):
-    """Return the current counter value and log version, if it's later than
-       the given version, waiting up to 5 seconds for the counter to change."""
+@APP.route("/watch/<from_value>")
+def watch(from_value):
+    """Wait up to 5 seconds for the counter to advance past the given value,
+       then return the current value.  Return immediately if the counter
+       is already past the given value."""
     with LOCK:
-        if LAST_CHANGE["version"] <= int(from_version):
+        if LAST_CHANGE["value"] <= int(from_value):
             COND.wait(5)
-        return jsonify(LAST_CHANGE)
+        return jsonify(LAST_CHANGE["value"])
 
 @APP.route("/click")
 def click():
@@ -111,4 +107,4 @@ SYNC_THREAD = Thread(target=syncer, daemon=True)
 SYNC_THREAD.start()
 
 if __name__ == "__main__":
-    APP.run(host="0.0.0.0", port=6003)
+    APP.run(host="0.0.0.0", port=6004)
