@@ -1,4 +1,11 @@
 """
+Now we're going to add handlers that show and click the counter.  These could
+be used to click the counter each time the page is loaded, from a script on
+the page.
+
+This shows how Indelible can provide persistence for a webapp with very few
+dependencies.
+
 Example
 -------
 >>> import requests
@@ -15,7 +22,14 @@ from flask import Flask
 from indelible_log import Cmd, Log, profileFromJson
 
 APP = Flask(__name__)
+
+# An Indelible Profile provides credentials, keys and other configuration
+# parameters.
 PROFILE = profileFromJson(open("indelibleprofile.json", "r").read())
+
+# Create our counter log, if it wasn't created already.  The defaults ensure
+# that everything we put in the log is encrypted on our side, with a key
+# based on the master key set in the profile.
 LOG = Log("counter", PROFILE)
 LOG.create()
 

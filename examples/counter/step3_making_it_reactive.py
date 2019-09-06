@@ -1,4 +1,13 @@
 """
+We'd really like to have the counter be live.  For that we need a
+mechanism that a webpage could use to determine when the counter
+changes, nost just when the page is loaded but anytime it's being
+viewed.
+
+Now, instead of just returning the counter value, we'll also include
+a 'version' in the response, that'll be used to tell when clients
+are not in sync.
+
 Example:
 --------
 >>> import requests
@@ -24,7 +33,7 @@ Example:
 
 """
 
-from flask import Flask, jsonify, redirect
+from flask import Flask, jsonify
 from indelible_log import Cmd, Log, profileFromJson
 
 APP = Flask(__name__)
@@ -39,7 +48,8 @@ def get():
 
 @APP.route("/watch/<from_version>")
 def watch(from_version):
-    """Return the current counter value and log version, if it's later than the given version, waiting up to 5 seconds for the counter to change."""
+    """Return the current counter value and log version, if it's later than
+       the given version, waiting up to 5 seconds for the counter to change."""
     return jsonify(get_counter_diff(from_version, wait_seconds=5) or {})
 
 @APP.route("/click")

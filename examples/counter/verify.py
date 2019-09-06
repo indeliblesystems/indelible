@@ -9,7 +9,7 @@ import runpy
 import sys
 import time
 
-testprofile = json.loads(open("../../python/testprofile.json", "r").read())
+testprofile = json.loads(open("../../src/doc/testprofile.json", "r").read())
 indelibleprofile = testprofile.copy()
 indelibleprofile["master_key_base64"] = base64.standard_b64encode(os.urandom(32)).decode()
 json.dump(indelibleprofile, open("indelibleprofile.json", "w"))
