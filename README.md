@@ -27,5 +27,5 @@ Why do I want it to use Indelible now?
 
 Where can I learn more?
 -----------------------
-Take our API Tour for [curl](doc/100-REST-API-tour-with-curl.html) or [Python](doc/102-Python-API-tour.html), and check out the other [Documentation](doc/) and [Examples](examples/).
+Take our API Tour for [curl](https://htmlpreview.github.com/?https://github.com/indeliblesystems/indelible/blob/master/doc/100-REST-API-tour-with-curl.html) or [Python](https://htmlpreview.github.com/?https://github.com/indeliblesystems/indelible/blob/master/doc/102-Python-API-tour.html), and check out the other [Documentation](doc/) and [Examples](examples/).
 
