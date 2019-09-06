@@ -12,7 +12,7 @@ Prerequisites
 -   Indelible apikey --- Please [sign
     up](mailto:showmethelogs@indelible.systems) for the Developer
     Preview
--   `Python` --- Tested with 3.5
+-   `Python` --- Tested with 3.5-3.7
 -   Python packages --- `flask`, `indelible_log`
 
 Steps
