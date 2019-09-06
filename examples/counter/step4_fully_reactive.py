@@ -46,9 +46,9 @@ PROFILE = profileFromJson(open("indelibleprofile.json", "r").read())
 LOG = Log("counter", PROFILE)
 LOG.create()
 
-state_lock = Lock()
-state_cond = Condition(state_lock)
-last_change = {
+LOCK = Lock()
+COND = Condition(LOCK)
+LAST_CHANGE = {
     "value": 0,
     "version": 0
 }
@@ -56,17 +56,17 @@ last_change = {
 @APP.route("/get")
 def get():
     """Return the current counter value and log version."""
-    with state_lock:
-        return jsonify(last_change)
+    with LOCK:
+        return jsonify(LAST_CHANGE)
 
 @APP.route("/watch/<from_version>")
 def watch(from_version):
     """Return the current counter value and log version, if it's later than
        the given version, waiting up to 5 seconds for the counter to change."""
-    with state_lock:
-        if last_change["version"] <= int(from_version):
-            state_cond.wait(5)
-        return jsonify(last_change)
+    with LOCK:
+        if LAST_CHANGE["version"] <= int(from_version):
+            COND.wait(5)
+        return jsonify(LAST_CHANGE)
 
 @APP.route("/click")
 def click():
@@ -95,21 +95,21 @@ def get_counter_diff(from_version=0, wait_seconds=None):
 
 def syncer():
     """Keep the counter state sync'd locally."""
-    global last_change
+    global LAST_CHANGE
     while True:
-        with state_lock:
-            from_version = last_change["version"]
+        with LOCK:
+            from_version = LAST_CHANGE["version"]
         try:
             diff = get_counter_diff(from_version, wait_seconds=60)
-            if diff != None:
-                with state_lock:
-                    last_change = diff
-                    state_cond.notify_all()
+            if diff is not None:
+                with LOCK:
+                    LAST_CHANGE = diff
+                    COND.notify_all()
         finally:
             None
 
-sync_thread = Thread(target=syncer, daemon=True)
-sync_thread.start()
+SYNC_THREAD = Thread(target=syncer, daemon=True)
+SYNC_THREAD.start()
 
 if __name__ == "__main__":
     APP.run(host="0.0.0.0", port=6003)
