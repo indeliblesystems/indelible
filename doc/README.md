@@ -14,3 +14,6 @@ References
 ----
 * [API Reference](https://htmlpreview.github.com/?https://github.com/indeliblesystems/indelible/blob/master/doc/000-API-ref.html)
 
+See also
+----
+* [Examples](../examples/README.md)
