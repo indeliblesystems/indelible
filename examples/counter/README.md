@@ -17,6 +17,7 @@ Prerequisites
 
 Steps
 -----
+* [Step 0: Creating client profile](step0_creating_profile.md)
 * [Step 1: Hello, Flask](step1_hello_flask.py)
 * [Step 2: A '90s-style Hit Counter](step2_90s_hit_counter.py)
 * [Step 3: Making it reactive (client-side)](step3_reactive_clients.py)
