@@ -16,4 +16,4 @@ References
 
 See also
 ----
-* [Examples](../examples/README.md)
+* [Examples](../examples)
