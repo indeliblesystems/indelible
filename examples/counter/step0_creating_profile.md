@@ -13,7 +13,9 @@ You can generate a new random key by:
 
 ```
 python -c 'import base64, os; print(base64.standard_b64encode(os.urandom(32)).decode())'
+```
+Produces:
+```
 9wY+Oi33I870wopguIhuW4Ewo9HTVi8XGq+69JkA1ok=
 ```
-
 
