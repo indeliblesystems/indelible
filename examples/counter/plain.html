@@ -1,0 +1,12 @@
+<html>
+<body>
+	<form>
+		The counter value is <b id="counter">{{value}}</b> <input type="button" value="click" onclick="fetch('/click')">
+  </form>
+</body>
+<script src="watch.js">>
+</script>
+<script>
+    watchCounter(newValue =>
+        document.getElementById("counter").textContent = newValue)
+</script>

@@ -1,0 +1,31 @@
+<html>
+	<head>
+        <title>Indelible Counter Demo in Python with repl.it and flipclockjs.com</title>	
+
+		<link rel="stylesheet" href="flipclock.css">
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+		<script src="flipclock.js"></script>	
+        <script src="watch.js"></script>
+	</head>
+	<body>
+		<div class="clock" style="margin:2em;"></div>
+
+		<script type="text/javascript">
+			var clock;
+
+			$(document).ready(function() {
+				clock = new FlipClock($('.clock'), {{value}}, {
+					clockFace: 'Counter'
+				});
+			});
+
+            function updateClock(newValue) {
+                clock.setValue(newValue)
+            }
+            watchCounter(updateClock)
+		</script>
+		
+	</body>
+</html> 
