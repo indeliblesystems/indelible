@@ -3,8 +3,8 @@ We'll make a website hit counter reminiscent of those popular ones from the earl
 
 See:
 
-* code at https://repl.it/@indelible/counter
-* the finished counter at https://counter.indelible.repl.co/ 
+* https://repl.it/@indelible/counter, code
+* https://counter.indelible.repl.co/, the finished counter
 
 If you open the above in separate tabs, you can see each reload is reflected immediately in both tabs.
 
