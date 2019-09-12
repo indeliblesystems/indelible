@@ -7,7 +7,7 @@ Indelible is a new managed, persistent storage service, that is:
 * secure by default, end-to-end encrypted, safe, and private - you never have to expose any plaintext data to us.  Even for indexes.  Did you read that right?  Yes, you did: Indelible is a persistent store that provides value without needing access to any of your unencrypted data.  This also means that, in the event of a data breach, there's nothing fun to see.
 * versioned - old versions remain readable until you're done with them
 * immutable - new data is put in new versions; old versions never modified == eliminates data races, simplifies processing.  This is a big whole thing that shouldn't fit in a bullet point.
-* highly-available - layering atop today's great HA KV stores means 99.999% availability, much more than Google Cloud SQL's 99.95%.
+* highly-available - layering atop today's great HA KV stores means 99.999% availability
 * strongly consistent - sanity is more important than throughput
     * reactive - no additional pubsub/event sourcing/CQRS required.  Notifications come as pulls containing diffs showing what changed since the last version you saw.
 
