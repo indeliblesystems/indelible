@@ -1,0 +1,62 @@
+
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+code, pre {
+    font-family: "Lucida Console", Menlo, monospace;
+}
+pre {
+    margin-left: 10px;
+}
+#input {
+    font-style: italic;
+}
+h1 {
+    margin-left: -68px;
+}
+h2 {
+    margin-left: -58px;
+}
+h3 {
+    margin-left: -48px;
+}
+h4 {
+    margin-left: -38px;
+}
+h5 {
+    margin-left: -28px;
+}
+h6 {
+    margin-left: -18px;
+}
+table {
+    border-collapse: collapse;
+}
+table, th, td {
+    border: 1px solid black;
+}
+body {
+    margin-left: 75px;
+    max-width: 700px;
+}
+</style>
+<body>
+
+
+We'll make a website hit counter reminiscent of those popular ones from the early days of the Web--except this one will be highly-available, offloading its state to Indelible, while being fully encrypted. We'll also take the '90s one a step further and show off how we can keep the counter live, using Indelible's notification mechanism, to update the counter not just when the page is loaded, but anytime other people cause a click too.
+<p>
+Here's the finished counter.  Notice how the counter reflects each load you make 
+from another tab.
+
+<iframe src="https://counter.indelible.repl.co/" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true" sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-modals"></iframe>
+
+<h2>Prerequisites</h2>
+<table><tr>
+<td>Indelible apikey<td>Please <a href="mailto:showmethelogs@indelible.systems">sign up</a> for the Developer Preview
+<tr><td>Python<td>Tested with 3.5-3.7
+<tr><td>Python packages<td>flask, indelible_log
+</table>
+
+<h2>
+
