@@ -12,13 +12,13 @@ are in JSON.
 
 <h2>Log Commands</h2>
 <h3>CreateLog</h3>
-<h4>URL Path</h4>
+<h4>URL path</h4>
 <code>/v1/log/create</code>
 <h4>Request Keys</h4>
 ${tableFrom(
             code("authInfo") to "See <a href=\"#Authentication\">Authentication</a>.",
-            code("path") to "path of the log to create, as bytes. Encoding: Base64.",
-            code("keyId") to "A customer-defined plaintext identifier that helps to determine which encryption key is needed to use the log.  Visible to callers which can use DescribeLog.  In the future, it'll be possible to authorize access to a group of logs that share a <code>keyId</code>.  Encoding: String.")}
+            code("logName") to "Name of log to create. Encoding: String.",
+            code("logGroup") to "A customer-defined plaintext identifier that helps to determine which encryption key is needed to use the log.  Visible to callers which can use DescribeLog.  In the future, it'll be possible to authorize access to a group of logs that share a <code>logGroup</code>.  Encoding: String.")}
 <p>
 Sets policies for a log.  After successful execution, the log exists, empty, at version 0.
 <p>
@@ -35,7 +35,7 @@ Also see <a href="#Errors">Errors</a>.
 <h4>Request Keys</h4>
 ${tableFrom(
             code("authInfo") to "See <a href=\"#Authentication\">Authentication</a>.",
-            code("path") to "path of the log to create, as bytes. Encoding: Base64.",
+            code("logName") to "Name of the log to diff.  Encoding: String,",
             code("fromVersion") to "<i>(Optional)</i>  The version of the log to start diffing from.  If unspecified, 0 will be used.  Encoding: Integer.",
             code("toVersion") to "<i>(Optional)</i>  The version of the log to show diffs to.  If unspecified, the latest version will be used.  Encoding: Integer.",
             code("waitSeconds") to "If there's nothing to show yet&mdash;i.e. <code>fromVersion</code> matches the current log version and <code>toVersion</code> is unspecified&mdash;wait up to this number of seconds for a new version to be created, and diff it as soon as possible.  For an example, see <a href=\"100-API-tour-with-curl.html#longpoll\">Getting notified about new versions</a> in the API Tour.  Range: 0-60.  Encoding: Integer.",
@@ -81,8 +81,8 @@ ${tableFrom(
 <h4>Request Keys</h4>
 ${tableFrom(
             code("authInfo") to "See <a href=\"#Authentication\">Authentication</a>.",
-            code("path") to "path of the log to create, as bytes. Encoding: Base64.",
-            code("clientId") to "Identifies the person/system making the update.  Encoding: String."
+            code("logName") to "Name of the log to update.  Encoding: String,",
+            code("updateSource") to "Identifies the person/system making the update.  Encoding: String."
     )}
 <h4>Transaction Commands</h4>
 The HTTP request starts with the update parameters listed above, followed by a stream of transactions, encoded as JSON maps.
@@ -123,7 +123,7 @@ ${tableFrom(
             nb("401 Unauthorized") to "No authentication information was provided, or it was invalid.  See <a href=\"#Authentication\">Authentication</a>.",
             nb("404 Not Found") to "A log, log version, key, or value was not found, or there is no command handler for the request URL.  See the specific command documentation corresponding to any API Error.",
             nb("400 Bad Request") to "The request refers to unknown keys, undecodable or invalid values, or is missing required keys.",
-            nb("412 Precondition Failed") to "When creazting a log, a log at that path has already has been created, but with different parameters.  When updating a log, a transaction command precondition was not met&mdash;for example, <code>ExpectVersion</code> found the log to be a different version, or <code>Insert</code> found another value already set for the key.  See the specific command documentation corresponding to the API Error.",
+            nb("412 Precondition Failed") to "When creazting a log, a log with the given name has already has been created, but with different parameters.  When updating a log, a transaction command precondition was not met&mdash;for example, <code>ExpectVersion</code> found the log to be a different version, or <code>Insert</code> found another value already set for the key.  See the specific command documentation corresponding to the API Error.",
             nb("500 Internal Server Error") to "Thanks for finding a bug!  Please report it to <a href=\"showmethelogs@indelible.systems\">showmethelogs@indelible.systems</a>."
     )}
 <h3>API Errors</h3>
