@@ -42,9 +42,9 @@ profile = profileFromJson(profileJson)
 
 app = Flask(
     __name__,
-    static_folder='.',
-    template_folder='.',
-    root_path='/home/runner')
+    static_url_path='/static',
+    static_folder='static',
+    template_folder='template')
 log = Log("counter", profile)
 
 # We're going to subscribe to the counter value in one thread, so here's all the stuff we need to synchronize access to it.
@@ -111,20 +111,7 @@ def rtt():
 
 # Flask routes for static content:
 
-@app.route("/watch.js")
-def indexjs():
-    """Scripts ahoy!"""
-    return app.send_static_file("watch.js")
-
-@app.route("/flipclock.js")
-def flipclock_js():
-    return app.send_static_file("flipclock/flipclock.js")
-
-@app.route("/flipclock.css")
-def flipclock_css():
-    return app.send_static_file("flipclock/flipclock.css")
-
-@app.route("/plain.html")
+@app.route("/plain")
 def plain():
     with lock:
         return render_template("plain.html", value=last_change["value"])
@@ -136,7 +123,7 @@ def syncer():
         with lock:
             from_version = last_change["version"]
         try:
-            new_counter = get_counter(from_version, wait_seconds=1)
+            new_counter = get_counter(from_version, wait_seconds=60)
             if new_counter is not None:
                 with lock:
                     last_change = new_counter
