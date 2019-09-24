@@ -55,10 +55,6 @@ This is a brief discussion of how analytics can be done with Indelible.
 <td>Indelible apikey<td>Please <a href="mailto:showmethelogs@indelible.systems">sign up</a> for the Developer Preview
 <tr><td><code>Python</code><td>Tested with 2.7 and 3.6
 </table>
-<h2>Overview</h2>
-Indelible is a great choice for analyzing your data, because it makes it
-easy to track changes over time.
-
 <h2>Assumptions</h2>
 <ul>
 <li>You don't want any unencrypted data, or any encryption keys, stored off-site.
@@ -187,7 +183,7 @@ def sync(orders, daily_revenue):
 >>> daily_revenue.sync(orders_log, daily_revenue_log)
 daily_revenue last processed orders to source version 0
 no new orders, nothing to do
->>> # So let's add an order.
+>>> # So let's add an order and see how it gets aggregated.
 >>> orders_log.update([
 ...     Cmd.Upsert("1", {"date": "May 31", "revenue": 100})
 ... ])
@@ -202,10 +198,8 @@ daily_revenue last processed orders to source version 1
 no new orders, nothing to do
 >>>
 >>> # What does the aggregation actually look like?
->>> def dump(log):
-...     for x in log:
-...         print(x["entry"]["key"], "=", x["entry"]["value"])
->>> dump(daily_revenue_log)
+>>> for x in daily_revenue_log:
+...     print(x["entry"]["key"], "=", x["entry"]["value"])
 orders_version = 1
 May 31 = 100
 >>>
@@ -222,7 +216,8 @@ daily_revenue log now reflects orders up to source version 2
 >>>
 >>> # We can see that the May 31 total has been reduced to 0, and
 >>> # April 1 now shows the revenue from order 2:
->>> dump(daily_revenue_log)
+>>> for x in daily_revenue_log:
+...     print(x["entry"]["key"], "=", x["entry"]["value"])
 orders_version = 2
 May 31 = 0
 Apr 1 = 11
