@@ -168,10 +168,8 @@ def sync(orders, daily_revenue):
 >>> import os
 >>> import daily_revenue
 >>>
->>> # Load our Indelible credentials and master key.
+>>> # Load our Indelible credentials with a new master key, to start from scratch.
 >>> profile = profileFromJson(open("testprofile.json", "r").read())
->>>
->>> # Set a new key, to start from scratch.
 >>> profile["master_key"] = os.urandom(32)
 >>>
 >>> # Create the empty orders and daily_revenue logs.
