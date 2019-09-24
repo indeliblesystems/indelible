@@ -78,7 +78,7 @@ in the JavaScript Console:
 Replacing the <code>console.log</code> above with:
 """)
     updateCode(
-            """var path = indelible.path(["walkthrough", "Hello, World!", "v3"])
+            """var path = indelible.path(["walkthrough", "Hello, World!", "v5"])
 var clientId = "browser"
 var log = indelible.encryptingTransactor(path, profile, clientId)
 await log.create({"logGroup": "key1"})

@@ -1,0 +1,244 @@
+
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+code, pre {
+    font-family: "Lucida Console", Menlo, monospace;
+}
+pre {
+    margin-left: 10px;
+}
+#input {
+    font-style: italic;
+}
+h1 {
+    margin-left: -68px;
+}
+h2 {
+    margin-left: -58px;
+}
+h3 {
+    margin-left: -48px;
+}
+h4 {
+    margin-left: -38px;
+}
+h5 {
+    margin-left: -28px;
+}
+h6 {
+    margin-left: -18px;
+}
+table {
+    border-collapse: collapse;
+}
+table, th, td {
+    border: 1px solid black;
+}
+body {
+    margin-left: 75px;
+    max-width: 700px;
+}
+</style>
+<body>
+
+
+
+<h2>Overview</h2>
+Indelible's <code>diff</code>ing simplifies tracking changes into aggregations
+for analytics.  .
+This is a brief discussion of how analytics can be done with Indelible.
+
+<h2>Prerequisites</h2>
+<table><tr>
+<td>Indelible apikey<td>Please <a href="mailto:showmethelogs@indelible.systems">sign up</a> for the Developer Preview
+<tr><td><code>Python</code><td>Tested with 2.7 and 3.6
+</table>
+<h2>Overview</h2>
+Indelible is a great choice for analyzing your data, because it makes it
+easy to track changes over time.
+
+<h2>Assumptions</h2>
+<ul>
+<li>You don't want any unencrypted data, or any encryption keys, stored off-site.
+<li>You want incremental updates.  For example, if aggregating
+orders into "revenue per day", you want to be able to see the revenue
+for the current day while it's happening, not wait until midnight.
+<li>You want to be able to come up with new aggregations and run them
+for historical data.
+<li>You want the aggregator to be highly available.  You want to run N instances
+to ensure you still get updates even while N-1 fail, according to the business
+    needs for the data.
+</ul>
+
+<h2>Example</h2>
+We've got a log of orders, and we want to aggregate them into revenue per day.
+If we were using SQL, this query would work:
+<code><pre>
+    SELECT date,SUM(revenue) FROM orders GROUP BY date;
+</pre></code>
+but the SQL has some downsides: It's quite slow, and what's more, we need to rerun
+the query anytime we want close-to-accurate numbers--if the orders table is
+changing frequently, we may need to run this query often.
+With Indelible, we can use versioning to get daily totals that are
+consistent to the data we are working with, even if it's not the latest,
+and we can easily update our totals to make them consistent with any other
+version, forward or backward in time.
+
+<code><pre>
+    for order in orders_not_processed_yet():
+        if order.is_too_old():
+            continue
+        if order.is_being_removed():
+            daily_revenue[order.date.day()] += order.revenue
+        else:
+            daily_revenue[order.date.day()] -= order.revenue
+</pre></code>
+
+This would be fine if we were looking at a historical version, but our
+goal is to make current daily totals highly-available, so we need to add
+a transaction boundary so we can pick up if something crashes.
+
+<code><pre>
+"""Aggregate orders into daily revenue."""
+
+from indelible_log import Cmd
+
+def sync(orders, daily_revenue):
+    """Update daily_revenue totals to reflect any orders changed since the last
+    time we ran."""
+
+    # Sync the current daily_revenue log locally.
+    latest = {}
+    version_diff = daily_revenue.version_diff(from_version=0)
+    current_daily_revenue_version = version_diff.to_version
+    for change in version_diff.changes():
+        entry = change["entry"]
+        latest[entry["key"]] = entry["value"]
+    if "orders_version" not in latest:
+        orders_starting_point = 0
+    else:
+        orders_starting_point = int(latest["orders_version"])
+
+    # For each changed order, figure how much daily revenue is changed.
+    adjustments = {}
+    print("daily_revenue last processed orders to source version %d" % orders_starting_point)
+    orders_version_diff = orders.version_diff(orders_starting_point)
+    if orders_starting_point == orders_version_diff.to_version:
+        print("no new orders, nothing to do")
+        return
+    for change in orders_version_diff.changes():
+        entry = change["entry"]
+        order_key = entry["key"]
+        order = entry["value"]
+        if "date" not in order:
+            raise ValueError("order '%s' does not contain a date" % order_key)
+        date = order["date"]
+        if date not in adjustments:
+            adjustments[date] = 0
+        if "revenue" not in order:
+            raise ValueError("order '%s' does not contain a revenue value" % order_key)
+        revenue = order["revenue"]
+        if change["change"] == "Add":
+            adjustment = revenue
+        elif change["change"] == "Remove":
+            adjustment = -revenue
+        print("order %s represents an adjustment of revenue for %s by %d" % 
+            (order_key, date, adjustment))
+        adjustments[date] += adjustment
+
+    # Persist the totals.
+    commands = [
+        Cmd.ExpectVersion(current_daily_revenue_version),
+        Cmd.Upsert("orders_version", orders_version_diff.to_version)
+    ]
+    for date in adjustments:
+        if date in latest:
+            new = latest[date] + adjustments[date]
+        else:
+            new = adjustments[date]
+        commands.append(Cmd.Upsert(date, new))
+    daily_revenue.update(commands)
+
+    print("daily_revenue log now reflects orders up to source version %d"\
+          % orders_version_diff.to_version)
+
+</pre></code>
+
+<h2>Testing it out</h2>
+<code><pre>
+>>> from indelible_log import profileFromJson, Cmd, Log
+>>> import os
+>>> import daily_revenue
+>>>
+>>> # Load our Indelible credentials and master key.
+>>> profile = profileFromJson(open("testprofile.json", "r").read())
+>>>
+>>> # Set a new key, to start from scratch.
+>>> profile["master_key"] = os.urandom(32)
+>>>
+>>> # Create the empty orders and daily_revenue logs.
+>>> orders_log = Log("orders", profile)
+>>> orders_log.create()
+>>> daily_revenue_log = Log("daily_revenue", profile)
+>>> daily_revenue_log.create()
+>>>
+>>> daily_revenue.sync(orders_log, daily_revenue_log)
+daily_revenue last processed orders to source version 0
+no new orders, nothing to do
+>>> # So let's add an order.
+>>> orders_log.update([
+...     Cmd.Upsert("1", {"date": "May 31", "revenue": 100})
+... ])
+>>> daily_revenue.sync(orders_log, daily_revenue_log)
+daily_revenue last processed orders to source version 0
+order 1 represents an adjustment of revenue for May 31 by 100
+daily_revenue log now reflects orders up to source version 1
+>>>
+>>> # Great.  If we run it again, will it pick where it left off?
+>>> daily_revenue.sync(orders_log, daily_revenue_log)
+daily_revenue last processed orders to source version 1
+no new orders, nothing to do
+>>>
+>>> # What does the aggregation actually look like?
+>>> def dump(log):
+...     for x in log:
+...         print(x["entry"]["key"], "=", x["entry"]["value"])
+>>> dump(daily_revenue_log)
+orders_version = 1
+May 31 = 100
+>>>
+>>> # What if we remove an order, and add a new one?
+>>> orders_log.update([
+...     Cmd.Remove("1", {"date": "May 31", "revenue": 100}),
+...     Cmd.Upsert("2", {"date": "Apr 1", "revenue": 11})
+... ])
+>>> daily_revenue.sync(orders_log, daily_revenue_log)
+daily_revenue last processed orders to source version 1
+order 1 represents an adjustment of revenue for May 31 by -100
+order 2 represents an adjustment of revenue for Apr 1 by 11
+daily_revenue log now reflects orders up to source version 2
+>>>
+>>> # We can see that the May 31 total has been reduced to 0, and
+>>> # April 1 now shows the revenue from order 2:
+>>> dump(daily_revenue_log)
+orders_version = 2
+May 31 = 0
+Apr 1 = 11
+
+</pre></code>
+
+<h2>What do we have so far?</h2>
+We've got continuously-updated daily revenue totals that:
+<ul>
+<li>are highly-available &mdash; we can run more instances to ensure availability
+<li>safe &mdash; all the data involved is encrypted end-to-end; no keys or plaintext are exposed to Indelible
+</ul>
+
+<h2>Optimizations</h2>
+    If your aggregation requires lots of data, Indelible can be used to sync
+    to a source that's more ideally suited to that kind of query.  For example,
+    a local SQL or timeseries database might facilitate faster
+    aggregations, while you won't need to care if that database gets lost,
+    since it can always be rebuilt from scratch with Indelible.

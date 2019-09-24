@@ -17,6 +17,14 @@ generated/doc/102-Python-API-tour.extra: 102-verify.py 102-Python-API-tour.docte
 	PYTHONPATH=../python python3 102-verify.py
 	touch $@
 
+generated/doc/103-Analytics-With-Indelible.extra: \
+	103-verify.py \
+	103-part1-analytics.doctest.html \
+  daily_revenue.py \
+	../python/indelible_log/__init__.py
+	PYTHONPATH=../python python3 103-verify.py
+	touch $@
+
 generate: generated/doc $(patsubst %.doc.kt,../../doc/%.html,${SRCS})
 
 generated/doc:
