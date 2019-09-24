@@ -90,10 +90,11 @@ class Log:
         self.key_transformer = value_transformer(key_mode, key)
         self.value_transformer = value_transformer(value_mode, key)
 
-    def create(self, log_group):
+    def create(self, log_group = None):
         req = { "authinfo": self.authinfo }
         req["logName"] = self.remote_name
-        req["logGroup"] = log_group
+        if log_group != None:
+            req["logGroup"] = log_group
         response = requests.post(self.profile["endpoint_url"] + "/v1/log/create", json = req)
         handleError(response)
 
@@ -151,10 +152,11 @@ class Log:
     def update(
             self,
             commands,
-            update_source
+            update_source = None
     ):
         req = { "authinfo": self.authinfo, "logName": self.remote_name }
-        req["updateSource"] = update_source
+        if update_source != None:
+            req["updateSource"] = update_source
         try:
             iter = iter(commands)
         except:
