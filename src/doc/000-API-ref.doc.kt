@@ -139,23 +139,25 @@ ${tableFrom(
 <h4>Codes</h4>
 <h5>BAD_API_KEY (1001)</h5>
 The request is not authenticated, or has invalid authentication information.  See <a href="#Authentication">Authentication</a>.
-<h5>UNEXPECTED_VERSION (1002)</h5>
+<h5>TRANSACTION_CONFLICT (1002)</h5>
+The log was updated by another transaction, after this one started.
+<h5>UNEXPECTED_VERSION (1003)</h5>
 The log has a different version than an <code>ExpectVersion</code> transaction command was expecting.
-<h5>NONEXISTENT_VERSION (1003)</h5>
+<h5>NONEXISTENT_VERSION (1004)</h5>
 The log does not have the requested version for a <code>diff</code>.
-<h5>NONEXISTENT_LOG (1004)</h5>
+<h5>NONEXISTENT_LOG (1005)</h5>
 The requested log has not been created yet for an <code>update</code>.
 <!--
-<h5>NONEXISTENT_KEY (1005)</h5>
+<h5>NONEXISTENT_KEY (1006)</h5>
 Reserved.
-<h5>INVALID_MARKER (1006)</h5>
+<h5>INVALID_MARKER (1007)</h5>
 Reserved.
 -->
-<h5>UNEXPECTED_VALUE (1007)</h5>
+<h5>UNEXPECTED_VALUE (1008)</h5>
 An <code>Insert</code> transaction command found the key already had a value.
-<h5>NONEXISTENT_VALUE (1008)</h5>
+<h5>NONEXISTENT_VALUE (1009)</h5>
 An <code>Update</code> transaction command found no key to update.
-<h5>LOG_EXISTS (1009)</h5>
+<h5>LOG_EXISTS (1010)</h5>
 The log has already been created, with different options.
 
 """)
