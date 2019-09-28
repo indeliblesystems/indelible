@@ -85,7 +85,7 @@ ${tableFrom(
             code("updateSource") to "Identifies the person/system making the update.  Encoding: String."
     )}
 <h4>Transaction Commands</h4>
-The HTTP request starts with the update parameters listed above, followed by a stream of transactions, encoded as JSON maps.
+The HTTP request starts with the update parameters listed above, followed by a stream of transaction commands, encoded as JSON maps.
 <h5>Request Keys</h5>
 ${tableFrom(
             code("type") to "Command type.  See below.  Encoding: String.",
