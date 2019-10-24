@@ -17,9 +17,9 @@ class ValueTransformer(unittest.TestCase):
     def test_json_mode(self):
         self.assertEqual(
             indelible_log.value_transformer("json", key = None).encode({"a":123}),
-            "eyJhIjogMTIzfQ==")
+            "eyJhIjoxMjN9")
         self.assertEqual(
-            indelible_log.value_transformer("json", key = None).decode("eyJhIjogMTIzfQ=="),
+            indelible_log.value_transformer("json", key = None).decode("eyJhIjoxMjN9"),
             {"a":123})
 
     def test_string_mode(self):

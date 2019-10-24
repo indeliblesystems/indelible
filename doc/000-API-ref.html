@@ -85,7 +85,7 @@ Also see <a href="#Errors">Errors</a>.
 <h4>Request Keys</h4>
 <table><tr><td><code>authInfo</code></td><td>See <a href="#Authentication">Authentication</a>.</td></tr><tr><td><code>logName</code></td><td>Name of the log to update.  Encoding: String,</td></tr><tr><td><code>updateSource</code></td><td>Identifies the person/system making the update.  Encoding: String.</td></tr></table>
 <h4>Transaction Commands</h4>
-The HTTP request starts with the update parameters listed above, followed by a stream of transactions, encoded as JSON maps.
+The HTTP request starts with the update parameters listed above, followed by a stream of transaction commands, encoded as JSON maps.
 <h5>Request Keys</h5>
 <table><tr><td><code>type</code></td><td>Command type.  See below.  Encoding: String.</td></tr><tr><td><code>key</code></td><td> For entry commands, the key to check, update, or remove.  Encoding: Base64.</td></tr><tr><td><code>value</code></td><td> For entry commands, the value to update or remove.  Encoding: Base64.</td></tr><tr><td><code>version</code></td><td> For version commands, the version to expect.  Encoding: Integer.</td></tr></table>
 

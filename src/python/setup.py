@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="indelible_log-indeliblejeff",
-    version="0.4.2",
+    name="indelible_log",
+    version="0.4.3",
     author="Jeff Rhyason",
     author_email="jeff@indelible.systems",
     description="client for Indelible managed persistent store and synchronizer",

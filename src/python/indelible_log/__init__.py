@@ -219,7 +219,7 @@ class Log:
             req["limit"] = limit
         if pagination_options != None:
             req["paginationOptions"] = pagination_options.copy()
-            if "skipToKey" in req["paginationOptions"]:
+            if "skipToKey" in pagination_options:
                 skipToKey = req["paginationOptions"]["skipToKey"]
                 req["paginationOptions"]["skipToKey"] = \
                     self.key_transformer.encode(skipToKey)
