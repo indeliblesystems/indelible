@@ -235,7 +235,7 @@ class Log:
         if "nextPageOptions" in diff and diff["nextPageOptions"] != None:
             if "skipToKey" in diff["nextPageOptions"]:
                 diff["nextPageOptions"]["skipToKey"] = \
-                    self.key_transformer.decode(skipToKey)
+                    self.key_transformer.decode(diff["nextPageOptions"]["skipToKey"])
         return diff
 
     def update(
