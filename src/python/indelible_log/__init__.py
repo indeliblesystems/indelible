@@ -208,7 +208,8 @@ class Log:
             see the next page of diffs in the same version.
         """
         req = { "authinfo": self.authinfo, "logName": self.remote_name }
-        req["fromVersion"] = from_version
+        if from_version != None:
+            req["fromVersion"] = from_version
         if to_version != None:
             req["toVersion"] = to_version
         if wait_seconds != None:
@@ -219,7 +220,7 @@ class Log:
             req["limit"] = limit
         if pagination_options != None:
             req["paginationOptions"] = pagination_options.copy()
-            if "skipToKey" in pagination_options:
+            if pagination_options.get("skipToKey") is not None:
                 skipToKey = req["paginationOptions"]["skipToKey"]
                 req["paginationOptions"]["skipToKey"] = \
                     self.key_transformer.encode(skipToKey)
@@ -232,10 +233,11 @@ class Log:
                 "key": self.key_transformer.decode(x["entry"]["key"]),
                 "value": self.value_transformer.decode(x["entry"]["value"])
             }
-        if "nextPageOptions" in diff and diff["nextPageOptions"] != None:
-            if "skipToKey" in diff["nextPageOptions"]:
+        if diff.get("nextPageOptions") is not None:
+            toDecode = diff["nextPageOptions"].get("skipToKey")
+            if toDecode is not None:
                 diff["nextPageOptions"]["skipToKey"] = \
-                    self.key_transformer.decode(diff["nextPageOptions"]["skipToKey"])
+                    self.key_transformer.decode(toDecode)
         return diff
 
     def update(
