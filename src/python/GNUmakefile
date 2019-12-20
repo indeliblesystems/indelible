@@ -27,3 +27,8 @@ upload: dist test
 
 publish: upload
 
+upgrade-dependencies: .venv
+	rm requirements.txt
+	${PYTHON} -m pip install --upgrade pynacl requests
+	${PYTHON} -m pip freeze | grep -v indelible > requirements.txt
+
