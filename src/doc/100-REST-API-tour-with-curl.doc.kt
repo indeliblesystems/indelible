@@ -44,7 +44,7 @@ Let's create a new log with the defaults.
 ENDPOINT=https://log.ndlbl.net:8443
 CUSTOMERID=<i><b>customer-id</b></i>
 APIKEY=<i><b>"api-key"</b></i>
-LOGNAME=`echo -n "Hello, Indelible\!"`
+LOGNAME="Hello, Indelible"
 </pre>
 """)
     shellinput("if ! [ -f localsetup ] ; then echo localsetup is missing -- please create from localsetup.example ; exit 1 ; else . ./localsetup ; echo localsetup loaded ; fi\n", show = false)
@@ -52,7 +52,7 @@ LOGNAME=`echo -n "Hello, Indelible\!"`
     shellinput("""if [ -z "${'$'}APIKEY" ] ; then echo APIKEY is not set.  Do you need to create \'localsetup\' from the example in this directory\? ; fi
 """, show = false)
     expectOutput("", show = false)
-    shellinput("""if [ -z "${'$'}LOGNAME" ] ; then echo LOGNAME is not set.  Do you need to create \'localsetup\'\ from the example in this directory\? ; fi
+    shellinput("""export LOGNAME=`dd if=/dev/random bs=1 count=18 2> /dev/null | base64`
 """, show = false)
     expectOutput("", show = false)
     shellinput("echo hi\n", show = false)
