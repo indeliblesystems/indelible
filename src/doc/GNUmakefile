@@ -15,7 +15,6 @@ all: testprofile.js localsetup generate
 
 ../../doc/%.html: %.doc.kt doc.kt generated/doc generated/doc/%.extra
 	./$< --verify > $@ || ( cat $@ ; exit 1 )
-	git add $@
 
 generated/doc/%.extra:
 	@true
