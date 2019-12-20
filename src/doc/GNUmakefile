@@ -11,6 +11,8 @@ SRCS+=100-REST-API-tour-with-curl.doc.kt
 SRCS+=102-Python-API-tour.doc.kt
 SRCS+=103-Analytics-With-Indelible.doc.kt
 
+PYTHON=.venv/bin/python
+
 all: testprofile.js localsetup generate
 
 ../../doc/%.html: %.doc.kt doc.kt generated/doc generated/doc/%.extra
@@ -19,8 +21,10 @@ all: testprofile.js localsetup generate
 generated/doc/%.extra:
 	@true
 
-PYTHON_VERSIONS := 3.7
-generated/doc/102-Python-API-tour.extra: 102-verify.py 102-Python-API-tour.doctest.html ../python/indelible_log/__init__.py
+generated/doc/102-Python-API-tour.extra: PYTHON_VERSIONS := 3.7
+generated/doc/102-Python-API-tour.extra: \
+    102-verify.py \
+    102-Python-API-tour.doctest.html
 	$(foreach PYTHON_VERSION, $(PYTHON_VERSIONS), \
 	    echo Testing python${PYTHON_VERSION}... && \
 	    VENV=$$(mktemp -d /tmp/pythontest-XXXXXXXXX) && \
@@ -38,11 +42,11 @@ generated/doc/102-Python-API-tour.extra: 102-verify.py 102-Python-API-tour.docte
 	touch $@
 
 generated/doc/103-Analytics-With-Indelible.extra: \
+    .venv \
     103-verify.py \
     103-part1-analytics.doctest.html \
-    daily_revenue.py \
-    ../python/indelible_log/__init__.py
-	PYTHONPATH=../python python3 103-verify.py
+    daily_revenue.py
+	${PYTHON} 103-verify.py
 	touch $@
 
 generate: generated/doc $(patsubst %.doc.kt,../../doc/%.html,${SRCS})
@@ -57,6 +61,12 @@ testprofile.js:
 localsetup:
 	@echo Create localsetup from localsetup.example
 	@exit
+
+.venv: PYTHONDIST=../python/dist
+.venv:
+	python3.7 -m venv .venv
+	${PYTHON} -m pip install -r ${PYTHONDIST}/../indelible_log.egg-info/requires.txt
+	${PYTHON} -m pip install indelible_log --no-index --find-links file:${PYTHONDIST}
 
 clean:
 	-rm -fr generated
