@@ -6,7 +6,7 @@ test: venv
 	${PYTHON} testindelible.py
 
 venv:
-	virtualenv venv
+	python3.7 -m venv venv
 	venv/bin/pip install pynacl requests
 
 README.md: ../doc/generated/doc/102-Python-API-tour.html readme.part1

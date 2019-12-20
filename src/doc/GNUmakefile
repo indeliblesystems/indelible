@@ -22,7 +22,7 @@ generated/doc/102-Python-API-tour.extra: 102-verify.py 102-Python-API-tour.docte
 	    echo Testing python${PYTHON_VERSION}... && \
 	    VENV=$$(mktemp -d /tmp/pythontest-XXXXXXXXX) && \
 	    PYTHONDIST=$$(cd ../python/dist && pwd) && \
-	    virtualenv -p python${PYTHON_VERSION} $$VENV && \
+	    python${PYTHON_VERSION} -m venv $$VENV && \
 	    source $$VENV/bin/activate && \
 	    which pip && \
 	    pip install -r $$PYTHONDIST/../indelible_log.egg-info/requires.txt && \
