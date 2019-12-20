@@ -5,7 +5,11 @@ SHELL := bash
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
 
-SRCS=$(wildcard *.doc.kt)
+SRCS+=000-API-ref.doc.kt
+SRCS+=100-REST-API-tour-with-curl.doc.kt
+#SRCS+=101-JS-API-tour.doc.kt
+SRCS+=102-Python-API-tour.doc.kt
+SRCS+=103-Analytics-With-Indelible.doc.kt
 
 all: testprofile.js localsetup generate
 
