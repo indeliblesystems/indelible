@@ -13,9 +13,23 @@ all: testprofile.js localsetup generate
 generated/doc/%.extra:
 	@true
 
+PYTHON_VERSIONS := 3.7
 generated/doc/102-Python-API-tour.extra: 102-verify.py 102-Python-API-tour.doctest.html ../python/indelible_log/__init__.py
-	PYTHONPATH=../python python3 102-verify.py
-	touch $@
+	$(foreach PYTHON_VERSION, $(PYTHON_VERSIONS), \
+		echo Testing python${PYTHON_VERSION}... && \
+		VENV=$$(mktemp -d /tmp/pythontest-XXXXXXXXX) && \
+		PYTHONDIST=$$(cd ../python/dist && pwd) && \
+		virtualenv -p python${PYTHON_VERSION} $$VENV && \
+		source $$VENV/bin/activate && \
+		which pip && \
+		pip install -r $$PYTHONDIST/../indelible_log.egg-info/requires.txt && \
+		pip install indelible_log --no-index --find-links file:$$PYTHONDIST && \
+		python${PYTHON_VERSION} 102-verify.py && \
+		echo verified\! && \
+		rm -fr $$VENV && \
+		printf '\n' && \
+	) \
+		touch $@
 
 generated/doc/103-Analytics-With-Indelible.extra: \
 	103-verify.py \

@@ -18,25 +18,25 @@ Python 3.6.9 (default, Jul 25 2019, 01:16:08)
 [GCC 4.2.1 Compatible FreeBSD Clang 6.0.0 (tags/RELEASE_600/final 326565)] on freebsd11
 Type "help", "copyright", "credits" or "license" for more information.
 </pre><pre>
->>> from indelible_log import Cmd, Log
->>> import json
+>>> from pprint import pprint
+>>> from indelible_log import profileFromJson, Cmd, Log
 >>>
-&gt;&gt;&gt; profile = json.loads(open("testprofile.js", "r").read())
-&gt;&gt;&gt; log_name = json.dumps(["walkthrough", "Hello, world!", "v1"])
+&gt;&gt;&gt; profile = profileFromJson(open("testprofile.js", "r").read())
+&gt;&gt;&gt; log_name = "hello, world!"
 &gt;&gt;&gt;
 </pre>
 
 <h2 id="create">Creating a log</h2>
 Let's create a new log with the defaults.
 <pre>
->>> log = Log(log_name, profile, encrypt=True, key_mode="string", value_mode="json")
->>> log.create(log_group="test")
+>>> log = Log(log_name, profile)
+>>> log.create()
 >>>
 </pre>
 <h2 id="upsert">Appending to a log</h2>
 <pre>
->>> log.update(update_source="python", commands=[
-...     indelible_log.Cmd.Upsert("foo", [1, 2, 3])
+>>> log.update(commands=[
+...     Cmd.Upsert("foo", [1, 2, 3])
 ... ])
 >>>
 </pre>
@@ -45,7 +45,7 @@ Let's create a new log with the defaults.
 Iterate over the log's current entries:
 <pre>
 >>> for entry in log:
-...     print(entry)
+...     pprint(entry)
 {'change': 'Add', 'entry': {'key': 'foo', 'value': [1, 2, 3]}, 'version': 1}
 >>>
 </pre>
@@ -53,7 +53,7 @@ A previous version:
 <pre>
 >>> diff = log.version_diff(from_version=1)
 >>> for change in diff.changes():
-...     print(change)
+...     pprint(change)
 >>>
 </pre>
 <h2 id="longpoll">Reactive Logs &mdash; Getting notified about new versions</h2>
@@ -72,7 +72,7 @@ Back in your original window, start monitoring, then finish that <code>update()<
 >>> diff.to_version
 2
 >>> for change in diff.changes():
-...     print(change)
+...     pprint(change)
 {'change': 'Remove', 'entry': {'key': 'foo', 'value': [1, 2, 3]}, 'version': 1}
 {'change': 'Add', 'entry': {'key': 'bar', 'value': [4, 5, 6]}, 'version': 2}
 >>>

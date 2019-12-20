@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 import sys
 
 def _test():
     import doctest
     import json
+    from pprint import pprint
     import indelible_log
 
     indelible_log
@@ -20,6 +22,7 @@ def _test():
     log_name = json.dumps(["docgen", random_string()])
 
     return doctest.testfile("102-Python-API-tour.doctest.html", globs={
+        "pprint": pprint,
         "indelible_log": indelible_log,
         "log_name": log_name,
         "profile": profile
