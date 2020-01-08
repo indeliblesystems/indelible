@@ -61,6 +61,16 @@ class Encryption(unittest.TestCase):
             indelible_log.crypto.decrypt(test_key, standard_b64decode("DuO9oCKfeLUrcIImvVH88Y67un3CFnRwhZOvsmKMKFjTuKYsiLv0bwSBbjo=")),
             b"asdf")
 
+    def test_encrypt_big(self):
+        self.assertEqual(
+            standard_b64encode(indelible_log.crypto.encrypt(test_key, b"asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf")),
+            b"dEqM4YIt3FVIPBpTyas93rDhSgFe8sU7RStNKxdB5OC0zL/hHjREBfLm9aoMeXaawAzzJBJd0052b9PMNFF7mBDgmubin3ICaRcaAXJaAov0N6pZvA09NQ6sm8vb1vRV15hkXjVCoJoducIA")
+
+    def test_decrypt_big(self):
+        self.assertEqual(
+            indelible_log.crypto.decrypt(test_key, standard_b64decode("dEqM4YIt3FVIPBpTyas93rDhSgFe8sU7RStNKxdB5OC0zL/hHjREBfLm9aoMeXaawAzzJBJd0052b9PMNFF7mBDgmubin3ICaRcaAXJaAov0N6pZvA09NQ6sm8vb1vRV15hkXjVCoJoducIA")),
+            b"asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf")
+
 class PathEncoding(unittest.TestCase):
 
     def test_name_encoding_string(self):
